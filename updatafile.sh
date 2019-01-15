@@ -35,22 +35,14 @@ getUpdateInfo()
 			let indexStart+=1			
 			indexEnd=`expr index "$localstring" "]"`
 			let strLenth=$indexEnd-$indexStart;
-			checkFileConfigIP=${localstring:$indexStart:$strLenth}
+			#checkFileConfigIP=${localstring:$indexStart-1:$strLenth}
 			#echo "checkFileConfigIP :$checkFileConfigIP"
 			checkFileConfigIP=`expr substr "$localstring" $indexStart $strLenth`
 			#echo "expr substr $localstring $indexStart $strLenth"
+			#echo "checkFileConfigIP :$checkFileConfigIP"
 			continue;
 		fi
-
-		# indexStart=`expr index "$localstring" "["`
-		# if [ "$indexStart" -ne "0" ];then
-			# indexEnd=`expr index "$localstring" "]"`
-			# let indexStart+=1
-			# let strLenth=$indexEnd-$indexStart;
-			# checkFileConfigIP=`expr substr "$localstring" $indexStart $strLenth`
-			# echo "expr substr $localstring $indexStart $strLenth"
-			# continue;
-		# fi			
+			
 		
 		let indexStart=0
 		indexStart=`expr index "$localstring" "="`
