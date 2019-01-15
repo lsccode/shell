@@ -1,9 +1,10 @@
 #!/bin/sh
 localIP="127.0.0.1"
 checkFileConfigIP="127.0.0.1"
-updateFileVersionID="version_id"
-updateFileImgLoc="img"
-updateFileMd5="md5"
+checkFileVersionID="version_id"
+checkFileImgLoc="img"
+checkFileMd5="md5"
+downFileMd5="downmd5"
 
 localIP=`ifconfig eth0 | grep "inet addr" | awk '{ print $2}' | awk -F: '{print $2}'`
 #localIP=`ifconfig enp0s8 | grep "inet " | awk '{ print $2}'`
@@ -27,7 +28,7 @@ getUpdateInfo()
         while read localstring
         do
                 let indexStart=0
-                echo "localstring = $localstring"
+                #echo "localstring = $localstring"
                 indexStart=`expr index "$localstring" "["`
                 #echo "indexStart = $indexStart"
 
@@ -54,13 +55,13 @@ getUpdateInfo()
 
                         if [ "$fieldString" == "version_id=" ]
                         then
-                                updateFileVersionID=`expr substr "$localstring" $fileLength 60`
+                                checkFileVersionID=`expr substr "$localstring" $fileLength 60`
                         elif [ "$fieldString" == "img_location=" ]
                         then
-                                updateFileImgLoc=`expr substr "$localstring" $fileLength 60`
+                                checkFileImgLoc=`expr substr "$localstring" $fileLength 60`
                         elif [ "$fieldString" == "md5=" ]
                         then
-                                updateFileMd5=`expr substr "$localstring" $fileLength 60`
+                                checkFileMd5=`expr substr "$localstring" $fileLength 60`
                         else
                                 echo "not a valid"
                         fi
@@ -69,11 +70,9 @@ getUpdateInfo()
                 let readCount+=1
                 if [ $readCount -eq 3 ]
                 then
-                        echo "checkFileConfigIP :$checkFileConfigIP"
-                        echo "updateFileVersionID :$updateFileVersionID"
-                        echo "updateFileImgLoc :$updateFileImgLoc"
-                        echo "updateFileMd5 :$updateFileMd5"
-                        echo ""
+						if [ "$checkFileConfigIP" == "$localIP" ];then
+							return 0;
+						fi	
                         let readCount=0
                 fi
                 #echo ""
@@ -85,6 +84,26 @@ getUpdateInfo()
 
 getUpdateInfo $2
 
+echo "checkFileConfigIP :$checkFileConfigIP"
+echo "checkFileVersionID :$checkFileVersionID"
+echo "checkFileImgLoc :$checkFileImgLoc"
+echo "checkFileMd5 :$checkFileMd5"
+echo ""
+
+tftp -gr $checkFileImgLoc $1
+downFileMd5Temp=`md5sum "$checkFileImgLoc"`
+downFileSp=`expr index "$downFileMd5Temp" " "`
+let downFileSp-=1
+downFileMd5=`expr substr "$downFileMd5Temp" 1 $downFileSp`
+
+echo "downFileMd5 :$checkFileImgLoc $downFileMd5"
+
+if [ "$downFileMd5" == "$checkFileMd5" ]; then
+	echo "check success"
+else
+	echo "check failed!"
+fi
+
 # while true
 # do
         # getUpdateInfo $2
@@ -95,6 +114,6 @@ getUpdateInfo $2
 # done
 # echo "localIP :$localIP"
 # echo "checkFileConfigIP :$checkFileConfigIP"
-# echo "updateFileVersionID :$updateFileVersionID"
-# echo "updateFileImgLoc :$updateFileImgLoc"
-# echo "updateFileMd5 :$updateFileMd5"
+# echo "checkFileVersionID :$checkFileVersionID"
+# echo "checkFileImgLoc :$checkFileImgLoc"
+# echo "checkFileMd5 :$checkFileMd5"
