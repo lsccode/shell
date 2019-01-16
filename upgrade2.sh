@@ -2,10 +2,10 @@
 localIP="127.0.0.1"
 localVersionID=""
 localVersionFile="/etc/upinfo.cfg"
-configUpgradeIP="none"
-configUpgradeVersionID="none"
-configUpgradePackage="none"
-configUpgradePackageMd5="none"
+configUpgradeIP=""
+configUpgradeVersionID=""
+configUpgradePackage=""
+configUpgradePackageMd5=""
 
 #destFirmDir="/media/firmware/"
 #destApp="/"
@@ -72,8 +72,11 @@ function getUpdateInfo()
 				if [ "$configUpgradeIP" == "$localIP" ]; then
 					#  already get ip
 					return 0
-				else
+				else					
 					configUpgradeIP=${FieldValue}
+					configUpgradeVersionID=""
+					configUpgradePackage=""
+					configUpgradePackageMd5=""
 				fi				
 			elif [ "$retCode" -eq 2 ]; then
 				if [ "$FieldTag" == "version_id" ]; then
@@ -103,6 +106,17 @@ echo "configUpgradePackage :$configUpgradePackage"
 echo "configUpgradePackageMd5 :$configUpgradePackageMd5"
 echo ""
 
+if [ "$configUpgradeIP" != "$localIP" ]; then
+	echo "no config info "
+	return 1 
+fi
+
+if [ "$configUpgradeIP" == "" ] || [ "$configUpgradeVersionID" == "" ] || \
+	[ "$configUpgradePackage" == "" ] || [ "$configUpgradePackageMd5" == "" ];then
+	echo "configUpgradePara is none"
+	return 1
+fi
+
 if [ -f "$localVersionFile" ];then
 	localVersionID=`cat $localVersionFile`
 	
@@ -112,12 +126,6 @@ if [ -f "$localVersionFile" ];then
 	fi
 fi
 
-
-if [ "$configUpgradeIP" == "none" ] || [ "$configUpgradeVersionID" == "none" ] || \
-	[ "$configUpgradePackage" == "none" ] || [ "$configUpgradePackageMd5" == "none" ];then
-	echo "configUpgradePara is none"
-	return 1
-fi
 
 # get xxxx.tgz from tftp server
 tftp -gr $configUpgradePackage $1
@@ -142,6 +150,7 @@ else
 fi
 
 echo ""
+echo "start upgrad ,wait ... "
 
 #  mount device ,for temp file 
 mkdir -p /media/Storage
