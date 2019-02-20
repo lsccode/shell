@@ -1,0 +1,1 @@
+sed '/^[[:space:]]*$/d' nvp_mpi_vi.cpp
